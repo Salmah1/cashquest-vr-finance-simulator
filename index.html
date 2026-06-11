@@ -1,0 +1,1301 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>VR Finance Demo</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-environment-component@1.5.x/dist/aframe-environment-component.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Container that holds BOTH the A-Frame scene and the HUD overlay.
+     When A-Frame's fullscreen button fullscreens its canvas, a JS handler
+     in vr-demo4.js redirects fullscreen to this container so the HUD is
+     included in the fullscreen view. -->
+    <div id="scene-container">
+      <canvas
+        id="myChart"
+        width="512"
+        height="512"
+        style="display: none"
+      ></canvas>
+      <a-scene finance-demo shadow="type: basic">
+        <!-- Assets / reusable templates -->
+        <a-assets>
+          <a-mixin
+            id="road-surface"
+            geometry="primitive: box; width: 5; height: 0.05; depth: 12"
+            material="color: #3E3E3E"
+          >
+          </a-mixin>
+
+          <a-mixin
+            id="road-centre-line"
+            geometry="primitive: box; width: 0.25; height: 0.01; depth: 12"
+            material="color: #FFD84D"
+          >
+          </a-mixin>
+
+          <a-mixin
+            id="door-frame"
+            geometry="primitive: box; width: 2.4; height: 3.4; depth: 0.2"
+            material="color: #5B3A29"
+          >
+          </a-mixin>
+
+          <a-mixin
+            id="decision-door-panel"
+            geometry="primitive: box; width: 1.8; height: 2.8; depth: 0.08"
+            material="color: #FFFFFF"
+          >
+          </a-mixin>
+
+          <img
+            id="chart-guy"
+            src="https://peer.decentraland.org/lambdas/collections/contents/urn:decentraland:matic:collections-v2:0xc28a5db3b23b621b4c78c5cd712994e48c842735:0/thumbnail"
+            crossorigin="anonymous"
+          />
+        </a-assets>
+
+        <!-- Environment -->
+        <a-entity
+          id="env-ground"
+          environment="
+      preset: forest;
+      skyType: atmosphere;
+      ground: noise;
+      groundFrequency: 5;
+      groundColor: #6f6f6f;
+      groundColor2: #5a5a5a;
+      groundTexture: walkernoise;
+      playArea: 14;"
+        >
+        </a-entity>
+
+        <a-entity
+          id="env-towers-1"
+          environment="
+      preset: forest;
+      dressing: towers;
+      dressingAmount: 80;
+      dressingScale: 9;
+      dressingUniformScale: true;
+      dressingColor: #001e57;
+      seed: 6;
+      ground: none;
+      skyType: none;"
+        >
+        </a-entity>
+
+        <a-entity
+          id="env-towers-2"
+          environment="
+      preset: forest;
+      dressing: towers;
+      dressingAmount: 60;
+      dressingScale: 8;
+      dressingUniformScale: true;
+      dressingColor: #8A8A8A;
+      seed: 4;
+      ground: none;
+      skyType: none;"
+        >
+        </a-entity>
+
+        <a-entity
+          id="env-towers-3"
+          environment="
+      preset: default;
+      dressing: towers;
+      dressingAmount: 30;
+      dressingScale: 9;
+      dressingUniformScale: true;
+      dressingColor: #264d73;
+      seed: 3;
+      ground: none;
+      skyType: none;"
+        >
+        </a-entity>
+
+        <a-light type="point" position="0 6 10" intensity="2.5" color="#ffb347">
+        </a-light>
+
+        <a-sky id="dark-sky" material="color: #000000" visible="false"></a-sky>
+
+        <a-sky
+          id="contrast-sky"
+          material="color: #eaf6ff"
+          visible="false"
+        ></a-sky>
+
+        <!-- Decision area - forked road and two decision slots -->
+        <a-entity id="decision-hub">
+          <a-entity position="0 0.03 7.8" scale="1 1 1.35">
+            <a-entity mixin="road-surface"></a-entity>
+            <a-entity mixin="road-centre-line" position="0 0.03 0"></a-entity>
+          </a-entity>
+
+          <a-entity position="-3.9 0.03 -5" rotation="0 35 0">
+            <a-entity mixin="road-surface"></a-entity>
+            <a-entity mixin="road-centre-line" position="0 0.03 0"></a-entity>
+          </a-entity>
+
+          <a-entity position="3.9 0.03 -5" rotation="0 -35 0">
+            <a-entity mixin="road-surface"></a-entity>
+            <a-entity mixin="road-centre-line" position="0 0.03 0"></a-entity>
+          </a-entity>
+
+          <!-- Left door -->
+          <a-entity id="left-node" position="-6 0 -8" rotation="0 35 0">
+            <a-entity mixin="door-frame" position="0 1.5 0"></a-entity>
+
+            <a-entity
+              id="left-door"
+              class="clickable"
+              mixin="decision-door-panel"
+              position="0 1.5 0.12"
+              material="color: #D64541"
+              choice-door="slot: left"
+            >
+            </a-entity>
+
+            <a-plane
+              id="left-post"
+              position="-4 1 12"
+              width="1.3"
+              height="0.3"
+              material="color: #964B00"
+            >
+              <a-text value="Left" align="center" position="0 0 0.1"> </a-text>
+              <a-plane
+                height="5"
+                width="0.2"
+                position="-0.2 -2.2 0.01"
+                material="color: #964B00"
+              >
+              </a-plane>
+            </a-plane>
+
+            <a-box
+              class="clickable"
+              color="red"
+              scale="0.2 0.2 0.01"
+              position="-0.2 -0.5 0.03"
+              visibility-toggle="target: #fact-left; maxDistance: 6"
+            >
+            </a-box>
+
+            <a-box
+              id="left-trigger"
+              position="0 1 0.8"
+              width="2"
+              height="2.5"
+              depth="1.5"
+              visible="false"
+              material="opacity: 0"
+              decision-trigger="slot: left; radius: 1.35; enabled: true"
+            >
+            </a-box>
+
+            <a-plane
+              id="left-label-bg"
+              position="0 3.42 0.18"
+              width="4"
+              height="0.8"
+              material="color: #FFFFFF; opacity: 0.9; shader: flat"
+              side="double"
+            >
+            </a-plane>
+
+            <a-text
+              id="left-door-label"
+              value="Go to University"
+              position="0 3.4 0.22"
+              align="center"
+              anchor="center"
+              color="#D64541"
+              shader="flat"
+              width="3.2"
+              wrap-count="16"
+            >
+            </a-text>
+          </a-entity>
+
+          <!-- Right door -->
+          <a-entity id="right-node" position="6 0 -8" rotation="0 -35 0">
+            <a-entity mixin="door-frame" position="0 1.5 0"></a-entity>
+
+            <a-entity
+              id="right-door"
+              class="clickable"
+              mixin="decision-door-panel"
+              position="0 1.5 0.12"
+              material="color: #F39C12"
+              choice-door="slot: right"
+            >
+            </a-entity>
+
+            <a-plane
+              id="right-post"
+              position="4 1 12"
+              width="1.3"
+              height="0.3"
+              material="color: #964B00"
+            >
+              <a-text value="Right" align="center" position="0 0 0.1"> </a-text>
+
+              <a-plane
+                height="5"
+                width="0.2"
+                position="0.2 -2.2 0.01"
+                material="color: #964B00"
+              >
+              </a-plane>
+            </a-plane>
+            <a-box
+              class="clickable"
+              color="red"
+              scale="0.2 0.2 0.01"
+              position="0.2 -0.5 0.03"
+              visibility-toggle="target: #fact-right; maxDistance: 6"
+            >
+            </a-box>
+
+            <a-box
+              id="right-trigger"
+              position="0 1 0.8"
+              width="2"
+              height="2.5"
+              depth="1.5"
+              visible="false"
+              material="opacity: 0"
+              decision-trigger="slot: right; radius: 1.35; enabled: true"
+            >
+            </a-box>
+
+            <a-plane
+              id="right-label-bg"
+              position="0 3.42 0.18"
+              width="4"
+              height="0.8"
+              material="color: #FFFFFF; opacity: 0.9; shader: flat"
+              side="double"
+            >
+            </a-plane>
+
+            <a-text
+              id="right-door-label"
+              value="Get a Job"
+              position="0 3.4 0.22"
+              align="center"
+              anchor="center"
+              color="#F39C12"
+              shader="flat"
+              width="3.2"
+              wrap-count="16"
+            >
+            </a-text>
+          </a-entity>
+        </a-entity>
+
+        <!-- Start room - placed off to the side so it can't be seen from the fork.
+       Player spawns here at the back of the room and walks through the
+       exit door to begin the demo on the forked road.
+       Room dimensions: 14m wide x 6m tall x 14m deep. -->
+        <a-entity id="start-room" position="1000 0 0">
+          <!-- Floor -->
+          <a-box
+            position="0 0 0"
+            width="14"
+            height="0.1"
+            depth="14"
+            material="color: #3a3a3a"
+          >
+          </a-box>
+
+          <!-- Ceiling -->
+          <a-box
+            position="0 6 0"
+            width="14"
+            height="0.1"
+            depth="14"
+            material="color: #2a2a2a"
+          >
+          </a-box>
+
+          <!-- Back wall (behind the player spawn) -->
+          <a-box
+            position="0 3 7"
+            width="14"
+            height="6"
+            depth="0.1"
+            material="color: #4a4a4a"
+          >
+          </a-box>
+
+          <!-- Left wall -->
+          <a-box
+            position="-7 3 0"
+            width="0.1"
+            height="6"
+            depth="14"
+            material="color: #4a4a4a"
+          >
+          </a-box>
+
+          <!-- Right wall -->
+          <a-box
+            position="7 3 0"
+            width="0.1"
+            height="6"
+            depth="14"
+            material="color: #4a4a4a"
+          >
+          </a-box>
+
+          <!-- Front wall split around the doorway gap (1.8m wide, 2.8m tall).
+         Each side panel is 6.1m wide, centred at +/-3.95m.
+         Top panel fills the 3.2m gap above the door. -->
+          <a-box
+            position="-3.95 3 -7"
+            width="6.1"
+            height="6"
+            depth="0.1"
+            material="color: #4a4a4a"
+          >
+          </a-box>
+          <a-box
+            position="3.95 3 -7"
+            width="6.1"
+            height="6"
+            depth="0.1"
+            material="color: #4a4a4a"
+          >
+          </a-box>
+          <a-box
+            position="0 4.4 -7"
+            width="1.8"
+            height="3.2"
+            depth="0.1"
+            material="color: #4a4a4a"
+          >
+          </a-box>
+
+          <!-- Warm interior light -->
+          <a-light
+            type="point"
+            position="0 5.5 0"
+            intensity="1.8"
+            color="#fff3d6"
+          >
+          </a-light>
+
+          <!-- Info sign - floats in front of the player spawn -->
+          <a-entity position="0 2.2 2">
+            <a-plane
+              width="5.5"
+              height="3.2"
+              material="color: #FFFFFF; opacity: 0.7; shader: flat"
+              side="double"
+            >
+            </a-plane>
+
+            <a-text
+              value="VR Finance Demo"
+              position="0 1.05 0.01"
+              align="center"
+              anchor="center"
+              color="#1a1a1a"
+              shader="flat"
+              width="5"
+              wrap-count="22"
+            >
+            </a-text>
+
+            <a-text
+              value="Walk through a door to make a financial decision. Each choice affects your income, debt, and cash. Your goal: build a healthy financial position across six key life decisions."
+              position="0 0.1 0.01"
+              align="center"
+              anchor="center"
+              color="#333333"
+              shader="flat"
+              width="5"
+              wrap-count="40"
+            >
+            </a-text>
+
+            <a-text
+              value="Controls:  WASD or arrows to move  |  Mouse to look  |  G: toggle gaze selection  |  R: reset demo"
+              position="0 -1.1 0.01"
+              align="center"
+              anchor="center"
+              color="#555555"
+              shader="flat"
+              width="5"
+              wrap-count="48"
+            >
+            </a-text>
+          </a-entity>
+
+          <!-- Exit door -->
+          <a-entity id="start-door-node" position="0 0 -6.8">
+            <a-entity mixin="door-frame" position="0 1.5 0"></a-entity>
+
+            <a-entity
+              id="start-door"
+              class="clickable"
+              mixin="decision-door-panel"
+              position="0 1.5 0.12"
+              material="color: #27AE60"
+              choice-door="slot: start"
+            >
+            </a-entity>
+
+            <a-box
+              id="start-trigger"
+              position="0 1 0.8"
+              width="2"
+              height="2.5"
+              depth="1.5"
+              visible="false"
+              material="opacity: 0"
+              decision-trigger="slot: start; radius: 1.35; enabled: true"
+            >
+            </a-box>
+
+            <a-plane
+              position="0 3.42 0.18"
+              width="3"
+              height="0.7"
+              material="color: #FFFFFF; opacity: 0.9; shader: flat"
+              side="double"
+            >
+            </a-plane>
+
+            <a-text
+              value="Begin Demo"
+              position="0 3.4 0.22"
+              align="center"
+              anchor="center"
+              color="#27AE60"
+              shader="flat"
+              width="2.6"
+              wrap-count="16"
+            >
+            </a-text>
+          </a-entity>
+        </a-entity>
+
+        <!-- Inbetween room - placed at x: 2000 so it can't be seen from the fork.
+       Player is teleported here after every fork decision. The door is
+       locked until the player gazes at the wall button, then walking
+       through it returns them to the fork for the next decision.
+       Dimensions match the start room: 14 x 6 x 14. -->
+        <a-entity id="inbetween-room" position="2000 0 0">
+          <!-- Floor -->
+          <a-box
+            position="0 0 0"
+            width="14"
+            height="0.1"
+            depth="14"
+            material="color: #3a3a3a"
+          >
+          </a-box>
+
+          <!-- Ceiling -->
+          <a-box
+            position="0 6 0"
+            width="14"
+            height="0.1"
+            depth="14"
+            material="color: #2a2a2a"
+          >
+          </a-box>
+
+          <!-- Back wall -->
+          <a-box
+            position="0 3 7"
+            width="14"
+            height="6"
+            depth="0.1"
+            material="color: #4a4a4a"
+          >
+          </a-box>
+
+          <!-- Side walls -->
+          <a-box
+            position="-7 3 0"
+            width="0.1"
+            height="6"
+            depth="14"
+            material="color: #4a4a4a"
+          >
+          </a-box>
+          <a-box
+            position="7 3 0"
+            width="0.1"
+            height="6"
+            depth="14"
+            material="color: #4a4a4a"
+          >
+          </a-box>
+
+          <!-- Front wall split around the doorway gap (1.8m wide, 2.8m tall) -->
+          <a-box
+            position="-3.95 3 -7"
+            width="6.1"
+            height="6"
+            depth="0.1"
+            material="color: #4a4a4a"
+          >
+          </a-box>
+          <a-box
+            position="3.95 3 -7"
+            width="6.1"
+            height="6"
+            depth="0.1"
+            material="color: #4a4a4a"
+          >
+          </a-box>
+          <a-box
+            position="0 4.4 -7"
+            width="1.8"
+            height="3.2"
+            depth="0.1"
+            material="color: #4a4a4a"
+          >
+          </a-box>
+
+          <!-- Warm interior light -->
+          <a-light
+            type="point"
+            position="0 5.5 0"
+            intensity="1.8"
+            color="#fff3d6"
+          >
+          </a-light>
+          <a-box id="unlock-button" visible="false"></a-box>
+          <a-entity id="unlock-button-node" visible="false"></a-entity>
+          <a-text
+            id="unlock-button-label"
+            value="Unlock Door"
+            position="0 0.5 0.1"
+            align="center"
+            visible="false"
+          >
+          </a-text>
+
+          <!--small life decisions-->
+
+          <!-- UI TEXT -->
+          <a-text id="uiText" position="0 3 -3" align="center"></a-text>
+
+          <a-entity id="speechBubble" visible="false" position="0 2 -3">
+            <a-plane width="4" height="3" color="#222" opacity="0.9"></a-plane>
+
+            <!-- TEXT -->
+            <a-entity id="bubbleTextGroup">
+              <a-text
+                id="line1"
+                position="0 1.2 0.1"
+                align="center"
+                width="3.5"
+              ></a-text>
+              <a-text
+                id="line2"
+                position="0 0.9 0.1"
+                align="center"
+                width="3.5"
+              ></a-text>
+              <a-text
+                id="line3"
+                position="0 0.6 0.1"
+                align="center"
+                width="3.5"
+              ></a-text>
+              <a-text
+                id="line4"
+                position="0 0.3 0.1"
+                align="center"
+                width="3.5"
+              ></a-text>
+              <a-text
+                id="line5"
+                position="0 0.0 0.1"
+                align="center"
+                width="3.5"
+              ></a-text>
+              <a-text
+                id="line6"
+                position="0 -0.3 0.1"
+                align="center"
+                width="3.5"
+              ></a-text>
+            </a-entity>
+
+            <!-- NEXT BUTTON -->
+            <a-box
+              id="nextButton"
+              position="0 -1.4 0"
+              width="1.5"
+              height="0.4"
+              color="orange"
+              class="clickable"
+              visible="false"
+            >
+            </a-box>
+            <a-text value="Next" position="-0.4 -1.25 0.2"></a-text>
+
+            <!-- SLIDER SECTION -->
+            <a-entity id="sliderSection" visible="false">
+              <!-- Total Money -->
+              <a-text
+                id="totalMoneyText"
+                position="0 0.7 0.1"
+                align="center"
+                width="4"
+                value=""
+              >
+              </a-text>
+
+              <!-- Debt -->
+              <a-text value="Debt" position="-1.8 0.5 0.1"></a-text>
+              <!-- Value -->
+              <a-text
+                id="debtValue"
+                position="1.6 0.5 0"
+                align="right"
+                width="3"
+              >
+              </a-text>
+              <!-- Track -->
+              <a-box
+                class="clickable"
+                position="0 0.3 0.1"
+                width="3"
+                height="0.1"
+                slider-track="debt"
+              >
+              </a-box>
+              <!-- Knob -->
+              <a-sphere id="debtKnob" position="-1.5 0.3 0.1" radius="0.12">
+              </a-sphere>
+
+              <!-- Save -->
+              <a-text value="Save" position="-1.8 -0.2 0.1"></a-text>
+              <!-- Value -->
+              <a-text
+                id="saveValue"
+                position="1.6 -0.2 0"
+                align="right"
+                width="3"
+              >
+              </a-text>
+              <!-- Track -->
+              <a-box
+                class="clickable"
+                position="0 -0.4 0.1"
+                width="3"
+                height="0.1"
+                slider-track="save"
+              >
+              </a-box>
+              <!-- Knob -->
+              <a-sphere id="saveKnob" position="-1.5 -0.4 0.1" radius="0.12">
+              </a-sphere>
+
+              <!-- Invest -->
+              <a-text value="Invest" position="-1.8 -0.9 0.1"></a-text>
+              <a-text
+                id="investValue"
+                position="1.6 -0.9 0"
+                align="right"
+                width="3"
+              >
+              </a-text>
+              <a-box
+                class="clickable"
+                position="0 -1.1 0.1"
+                width="3"
+                height="0.1"
+                slider-track="invest"
+              >
+              </a-box>
+              <a-sphere id="investKnob" position="-1.5 -1.1 0.1" radius="0.12">
+              </a-sphere>
+            </a-entity>
+          </a-entity>
+
+          <!-- DEBT BUBBLE -->
+          <a-entity id="debtBubble" visible="false" position="-3 2 -4">
+            <!-- Background -->
+            <a-plane
+              width="2.8"
+              height="3"
+              color="#222"
+              opacity="0.9"
+            ></a-plane>
+
+            <!-- Title -->
+            <a-text value="Debt Repayment" position="0 1.2 0.1" align="center">
+            </a-text>
+
+            <!-- Totals -->
+            <a-text
+              id="totalDebtText"
+              value="Total Debt: £0"
+              position="0 0.8 0.1"
+              align="center"
+              width="3"
+            >
+            </a-text>
+
+            <a-text
+              id="studentDebtText"
+              value=""
+              position="0 0.45 0.1"
+              align="center"
+              width="3"
+            >
+            </a-text>
+
+            <a-text
+              id="mortgageDebtText"
+              value=""
+              position="0 0.15 0.1"
+              align="center"
+              width="3"
+            >
+            </a-text>
+
+            <!-- Repayment -->
+            <a-text
+              id="debtPayText"
+              value="Repayment: £0"
+              position="0 -0.25 0.1"
+              align="center"
+              width="3"
+            >
+            </a-text>
+
+            <!-- Slider Track -->
+            <a-box
+              class="clickable"
+              position="0 -0.65 0.1"
+              width="2"
+              height="0.1"
+              depth="0.05"
+              color="#ffffff"
+              slider-track="debtSub"
+            >
+            </a-box>
+
+            <!-- Slider Knob -->
+            <a-sphere
+              id="debtSubKnob"
+              position="-1 -0.65 0.12"
+              radius="0.1"
+              color="#dddddd"
+            >
+            </a-sphere>
+          </a-entity>
+
+          <!-- SAVE BUBBLE -->
+          <a-entity id="saveBubble" visible="false" position="0 2 -4">
+            <a-plane width="2.8" height="3" color="#222"></a-plane>
+
+            <!-- Savings -->
+            <a-text value="Savings" position="-1.2 1.1 0.1"></a-text>
+
+            <a-text
+              id="saveTotalText"
+              value="Save Budget: £0"
+              position="0 1.45 0.1"
+              align="center"
+              width="3"
+            >
+            </a-text>
+
+            <a-text
+              id="savingsPercent"
+              value="25%"
+              position="0.75 1.1 0.1"
+              align="right"
+              width="2"
+            >
+            </a-text>
+
+            <a-text
+              id="savingsMoney"
+              value="£0"
+              position="1.45 1.1 0.1"
+              align="right"
+              width="2"
+            >
+            </a-text>
+
+            <a-box
+              class="clickable"
+              position="0 0.9 0.1"
+              width="2"
+              height="0.1"
+              slider-track="savingsSub"
+            ></a-box>
+
+            <a-sphere
+              id="savingsSubKnob"
+              position="-1 0.9 0.1"
+              radius="0.1"
+            ></a-sphere>
+
+            <!-- Cash ISA -->
+            <a-text value="Cash ISA" position="-1.2 0.4 0.1"></a-text>
+
+            <a-text
+              id="cashISAPercent"
+              value="25%"
+              position="0.75 0.4 0.1"
+              align="right"
+              width="2"
+            >
+            </a-text>
+
+            <a-text
+              id="cashISAMoney"
+              value="£0"
+              position="1.45 0.4 0.1"
+              align="right"
+              width="2"
+            >
+            </a-text>
+
+            <a-box
+              class="clickable"
+              position="0 0.2 0.1"
+              width="2"
+              height="0.1"
+              slider-track="cashISASub"
+            ></a-box>
+
+            <a-sphere
+              id="cashISASubKnob"
+              position="-1 0.2 0.1"
+              radius="0.1"
+            ></a-sphere>
+
+            <!-- LISA -->
+            <a-text value="LISA" position="-1.2 -0.3 0.1"></a-text>
+
+            <a-text
+              id="lisaPercent"
+              value="25%"
+              position="0.75 -0.3 0.1"
+              align="right"
+              width="2"
+            >
+            </a-text>
+
+            <a-text
+              id="lisaMoney"
+              value="£0"
+              position="1.45 -0.3 0.1"
+              align="right"
+              width="2"
+            >
+            </a-text>
+
+            <a-box
+              class="clickable"
+              position="0 -0.5 0.1"
+              width="2"
+              height="0.1"
+              slider-track="lisaSub"
+            ></a-box>
+
+            <a-sphere
+              id="lisaSubKnob"
+              position="-1 -0.5 0.1"
+              radius="0.1"
+            ></a-sphere>
+
+            <!-- Bonds -->
+            <a-text value="Bonds" position="-1.2 -1.0 0.1"></a-text>
+
+            <a-text
+              id="bondsPercent"
+              value="25%"
+              position="0.75 -1.0 0.1"
+              align="right"
+              width="2"
+            >
+            </a-text>
+
+            <a-text
+              id="bondsMoney"
+              value="£0"
+              position="1.45 -1.0 0.1"
+              align="right"
+              width="2"
+            >
+            </a-text>
+
+            <a-box
+              class="clickable"
+              position="0 -1.2 0.1"
+              width="2"
+              height="0.1"
+              slider-track="bondsSub"
+            ></a-box>
+
+            <a-sphere
+              id="bondsSubKnob"
+              position="-1 -1.2 0.1"
+              radius="0.1"
+            ></a-sphere>
+
+            <!-- Submit Finance Button -->
+            <a-box
+              id="submitFinance"
+              class="clickable"
+              position="0 -1.85 0.1"
+              width="1.8"
+              height="0.35"
+              depth="0.08"
+              color="#27AE60"
+            >
+            </a-box>
+
+            <a-text
+              value="Submit"
+              position="0 -1.85 0.2"
+              align="center"
+              width="3"
+            >
+            </a-text>
+          </a-entity>
+
+          <!-- INVEST BUBBLE -->
+          <a-entity id="investBubble" visible="false" position="3 2 -4">
+            <a-plane width="2.5" height="2" color="#222"></a-plane>
+            <a-text value="Invest" position="0 0.8 0.1" align="center"></a-text>
+
+            <a-box
+              class="clickable"
+              position="0 0.2 0.1"
+              width="2"
+              height="0.1"
+              slider-track="investSub"
+            ></a-box>
+            <a-sphere
+              id="investSubKnob"
+              position="-1 0.2 0.1"
+              radius="0.1"
+            ></a-sphere>
+          </a-entity>
+
+          <!-- Exit door - locked initially (grey, dimmed, .clickable absent,
+         walk trigger disabled). unlockRoomDoor() flips all of this. -->
+          <a-entity id="inbetween-door-node" position="0 0 -6.8">
+            <a-entity mixin="door-frame" position="0 1.5 0"></a-entity>
+
+            <a-entity
+              id="inbetween-door"
+              mixin="decision-door-panel"
+              position="0 1.5 0.12"
+              material="color: #888888; opacity: 0.4"
+              choice-door="slot: inbetween"
+            >
+            </a-entity>
+
+            <a-box
+              id="inbetween-trigger"
+              position="0 1 0.8"
+              width="2"
+              height="2.5"
+              depth="1.5"
+              visible="false"
+              material="opacity: 0"
+              decision-trigger="slot: inbetween; radius: 1.35; enabled: false"
+            >
+            </a-box>
+
+            <a-plane
+              position="0 3.42 0.18"
+              width="3"
+              height="0.7"
+              material="color: #FFFFFF; opacity: 0.9; shader: flat"
+              side="double"
+            >
+            </a-plane>
+
+            <a-text
+              id="inbetween-door-label"
+              value="Locked"
+              position="0 3.4 0.22"
+              align="center"
+              anchor="center"
+              color="#888888"
+              shader="flat"
+              width="2.6"
+              wrap-count="16"
+            >
+            </a-text>
+          </a-entity>
+        </a-entity>
+
+        <a-entity endroom id="endroom" visible="false" position="1000 0 1000">
+          <a-light type="ambient" intensity="3" color="#445451"></a-light>
+          <a-light type="point" intensity="5" position="0 2 0"></a-light>
+          <a-entity
+            environment="preset: threetowers; dressingAmount: 10"
+          ></a-entity>
+
+          <a-plane
+            id="display"
+            position="0 1 -1"
+            scale="1.5 1.5 2"
+            color="#ffffFf"
+          >
+            <a-text
+              value="Summary:"
+              color="#000000"
+              align="center"
+              baseline="top"
+              position="0 0.4 0"
+            >
+            </a-text>
+            <a-text
+              id="final-summary"
+              value="Summary:"
+              color="#000000"
+              align="center"
+              baseline="top"
+              width="1.5"
+              position="0 0.2 0"
+            >
+            </a-text>
+            <a-text
+              id="more-summary"
+              value="Summary:"
+              color="#000000"
+              align="center"
+              baseline="top"
+              width="1"
+              position="0 -0.25 0"
+            >
+            </a-text>
+          </a-plane>
+
+          <a-sky color="#89CFF0"></a-sky>
+          <a-plane
+            color="#008080"
+            rotation="-90 0 0"
+            position="0 0.3 2"
+            width="30"
+            height="30"
+          >
+          </a-plane>
+        </a-entity>
+
+        <!-- Player rig - starts inside the start room -->
+        <a-entity id="rig" position="1000 0 5">
+          <a-entity
+            id="player-camera"
+            camera
+            look-controls
+            wasd-controls="acceleration: 30"
+            position="0 1.4 0"
+          >
+            <!-- Gaze -->
+            <a-cursor
+              id="gaze-cursor"
+              fuse="true"
+              fuse-timeout="1200"
+              raycaster="objects: .clickable"
+            >
+            </a-cursor>
+
+            <!-- Mouse -->
+            <a-entity cursor="rayOrigin: mouse" raycaster="objects: .clickable">
+            </a-entity>
+
+            <a-text
+              id="fact-left"
+              visible="false"
+              value="placeholder"
+              align="center"
+              position="0 0 -0.1"
+              width="0.10"
+              wrap-count="30"
+              geometry="primitive: plane; width: 0.10; height: 0.08"
+              material="color: #222; opacity: 0.9"
+              close-on-move
+            >
+            </a-text>
+            <a-text
+              id="fact-right"
+              visible="false"
+              value="placeholder"
+              align="center"
+              position="0 0 -0.1"
+              width="0.10"
+              wrap-count="30"
+              geometry="primitive: plane; width: 0.10; height: 0.08"
+              material="color: #222; opacity: 0.9"
+              close-on-move
+            >
+            </a-text>
+          </a-entity>
+        </a-entity>
+        <a-entity
+          id="menu_trigger"
+          class="clickable"
+          geometry="primitive: plane; width: 1.5; height: 0.3"
+          material="color: #333"
+          position="0 1 -4"
+          visibility-toggle="target: #menu; maxDistance: 6"
+        >
+          <a-text value="Hover to Open Menu" align="center"></a-text>
+
+          <a-plane
+            src="#chart-guy"
+            position="0 0 -0.5"
+            width="2"
+            height="2"
+            depth="0.2"
+            transparent="true"
+          >
+          </a-plane>
+
+          <a-entity
+            id="menu"
+            visible="false"
+            position="0 1 0.1"
+            geometry="primitive: plane; width: 2; height: 1.5"
+            material="color: #222; opacity: 0.9"
+          >
+            <a-text
+              value="Cash history"
+              position="0 0.6 0.01"
+              align="center"
+            ></a-text>
+
+            <a-plane
+              id="chartPlane"
+              position="0 0 0.02"
+              width="1.2"
+              height="1.2"
+              material="src: #myChart; transparent: true; shader: flat"
+            >
+            </a-plane>
+
+            <a-box
+              class="clickable"
+              close-menu
+              color="red"
+              scale="0.2 0.2 0.01"
+              position="0.8 0.6 0.03"
+            >
+              <a-text value="X" align="center" position="0 0 1"></a-text>
+            </a-box>
+          </a-entity>
+        </a-entity>
+      </a-scene>
+
+      <!-- HTML overlay HUD - fixed to screen, unaffected by VR space -->
+      <div id="hud-overlay">
+        <div id="decision-title-html">Choose your financial path</div>
+        <div id="choice-feedback-html">Walk through a door to choose</div>
+
+        <!-- Stats with tooltips -->
+        <div class="hud-tooltip">
+          <span class="hud-stat" id="hud-income-html">Income: &pound;0</span>
+
+          <div class="tooltip-inline">
+            <span class="tooltip-icon">ⓘ</span>
+            <div class="hover-tooltip">
+              Your monthly earnings from jobs or investments.
+            </div>
+          </div>
+        </div>
+
+        <div class="hud-tooltip">
+          <span class="hud-stat" id="hud-debt-html">Debt: &pound;0</span>
+
+          <div class="tooltip-inline">
+            <span class="tooltip-icon">ⓘ</span>
+            <div class="hover-tooltip">
+              Money you owe, such as student loans or mortgages.
+            </div>
+          </div>
+        </div>
+
+        <div class="hud-tooltip">
+          <span class="hud-stat" id="hud-cash-html">Cash: &pound;2,000</span>
+
+          <div class="tooltip-inline">
+            <span class="tooltip-icon">ⓘ</span>
+            <div class="hover-tooltip">
+              Money you currently have available to spend.
+            </div>
+          </div>
+        </div>
+
+        <div class="hud-stat" id="hud-age-html">Age:</div>
+
+        <!-- Controls section -->
+        <div id="controls-row">
+          <div id="controls-wrapper">
+            <span id="controls-header">Controls</span>
+            <div class="tooltip-inline">
+              <span class="tooltip-icon">ⓘ</span>
+              <!-- Tooltip panel -->
+              <div class="hover-tooltip controls-tooltip">
+                <strong>Controls:</strong><br /><br />
+
+                Press <b>G</b> = toggle gaze selection.<br />
+                Press <b>O</b> = toggle audio.<br />
+                Press <b>T</b> = toggle text size.<br />
+                Press <b>M</b> = toggle dark mode.<br />
+                Press <b>H</b> = toggle contrast mode.<br />
+                Press <b>R</b> = restart the demo.<br />
+                Press <b>V</b> = toggle voice commands. Say:
+                <br />
+                &nbsp;&nbsp;&nbsp;"Start" or "Begin", "Exit" or "Continue"<br />
+                &nbsp;&nbsp;&nbsp;"Left", "Right", "Next", "Submit"<br />
+                &nbsp;&nbsp;&nbsp;"Gaze on/off", "Text on/off", "Dark on/off"<br />
+                &nbsp;&nbsp;&nbsp;"Contrast on/off", "Audio on/off", "Voice
+                off"<br />
+                &nbsp;&nbsp;&nbsp;"Reset"<br /><br />
+              </div>
+            </div>
+          </div>
+
+          <div id="controls-help-html">
+            Gaze: OFF | Audio: OFF | Voice: OFF | Dark: OFF | Contrast: NORMAL |
+            Reset
+          </div>
+
+          <!-- Audio/voice status -->
+          <div id="audio-indicator">
+            <div id="audio-status"></div>
+            <div id="audio-transcript"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- /#scene-container -->
+
+    <script src="js/player.js"></script>
+    <script src="js/fixed_rates.js"></script>
+    <script src="js/finance.js"></script>
+    <script src="js/decisions.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/components/slider-component.js"></script>
+    <script src="js/accessibility.js"></script>
+    <script src="js/vr-demo4.js"></script>
+  </body>
+</html>
