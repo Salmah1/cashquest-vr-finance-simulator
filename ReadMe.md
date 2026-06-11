@@ -173,34 +173,30 @@ Alternatively, open the project using the **Live Server** extension in Visual St
 
 ## Screenshots
 
-### Environment
-
-![basic environment view](/screenshots/basicEnvironment.png)
-
 ### Entrance Room
 
-![beginning](/screenshots/entrance.png)
+![Entrance Room](screenshots/entrance.png)
+
+### Main Environment
+
+![Main Environment](screenshots/basicEnvironment.png)
 
 ### Financial Breakdown Screen
 
-![info](/screenshots/info.png)
+![Financial Breakdown Screen](screenshots/financialBreakdown.png)
 
 ### Consequence Dialogue
 
-![dialog box](/screenshots/dialogBox.png)
+![Consequence Dialogue](screenshots/consequence.png)
 
-### Large Text Mode
+### Large Text Mode and Dark Mode
 
-![large text mode](/screenshots/largeText.png)
+![Large Text Mode and Dark Mode](screenshots/dark.png)
 
-### Dark Mode
+### High Contrast Mode with Voice Commands
 
-![Dark move](/screenshots/dark.png)
+![High Contrast Mode with Voice Commands](screenshots/highContrast.png)
 
-### High Contrast Mode
+### Dark Mode, High Contrast Mode, and Audio Narration
 
-![High contrast mode](/screenshots/highContrast.png)
-
-### Dark Mode + High Contrast
-
-![dark+high contrast](/screenshots/darkHigh.png)
+![Dark Mode, High Contrast Mode, and Audio Narration](screenshots/darkHigh.png)
