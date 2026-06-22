@@ -2,11 +2,11 @@
 
 ## Overview
 
-CashQuest is an educational virtual reality application developed using A-Frame and JavaScript. The project aims to improve financial literacy by allowing users to explore the long-term impact of financial decisions in an interactive VR environment.
+CashQuest is an educational Virtual Reality (VR) finance simulator developed using A-Frame, JavaScript, HTML, and CSS.
 
-Players progress through a series of life choices that affect their income, debt, savings, and overall financial wellbeing. Alongside decision-making activities, users allocate disposable income across debt repayment, savings, and investments to explore different financial strategies.
+The project was designed to improve financial literacy by allowing users to experience the long-term consequences of financial decisions within an immersive virtual environment. Players progress through a series of life choices that influence income, debt, savings, investments, and overall financial wellbeing.
 
-The application combines immersive virtual reality interactions with financial education concepts to provide an engaging learning experience while incorporating accessibility features such as voice commands, audio narration, gaze-based interaction, adjustable text sizes, dark mode, and high-contrast mode.
+In addition to decision-making activities, users allocate disposable income between debt repayment, savings products, and investments using interactive VR interfaces. The application combines experiential learning with accessibility-focused design to create an engaging and inclusive educational experience.
 
 ---
 
@@ -14,101 +14,159 @@ The application combines immersive virtual reality interactions with financial e
 
 ### Interactive Life Decisions
 
-Players make a series of financial decisions, including:
+Players progress through a series of major financial decisions:
 
 - University or employment
 - Renting or buying a home
 - Shared accommodation or living alone
 - Car ownership or public transport
 - Debt repayment or investing
-- Career advancement choices
+- Career advancement opportunities
 
-Each decision influences the player's financial situation and future outcomes.
+Each choice affects future financial outcomes, creating different pathways through the simulation.
 
 ### Financial Allocation Activities
 
-Users allocate disposable income between:
+After each life stage, users allocate disposable income across:
 
 - Debt repayment
 - Savings
 - Investments
 
-Interactive sliders provide immediate visual feedback on how financial resources are distributed.
+Interactive VR sliders provide real-time feedback showing how allocation decisions affect financial outcomes.
 
-### Savings and Investment Options
+### Savings and Investment Simulation
 
-Savings can be distributed across multiple financial products:
+Users can distribute savings between:
 
 - Savings Accounts
 - Cash ISAs
 - Lifetime ISAs (LISAs)
 - Bonds
 
-The simulation models interest growth and contribution limits to encourage realistic financial planning.
+The simulator models:
 
-### Accessibility Features
+- Annual contribution limits
+- Government LISA bonuses
+- Interest growth
+- Long-term asset accumulation
 
-The application includes several accessibility features:
+This encourages realistic financial planning behaviours.
 
-- Gaze-based interaction
-- Voice commands
-- Audio narration
-- Adjustable text sizes
-- Dark mode
-- High-contrast mode
+### Educational Content
+
+Each decision is accompanied by financial facts and educational explanations designed to improve financial literacy.
+
+Examples include:
+
+- Student debt and graduate earnings
+- Property ownership versus renting
+- Transport costs
+- Investment fundamentals
+- Debt repayment strategies
 
 ---
 
-## Controls and Shortcuts
+## Accessibility Features
 
-### Keyboard Controls
+Accessibility was a key design requirement throughout development.
 
-| Key   | Action                    |
-| ----- | ------------------------- |
-| **G** | Toggle gaze interaction   |
-| **T** | Toggle large text mode    |
-| **O** | Toggle audio narration    |
-| **V** | Toggle voice commands     |
-| **M** | Toggle dark mode          |
-| **H** | Toggle high contrast mode |
-| **R** | Reset the simulation      |
+### Interaction Accessibility
+
+- Gaze-based interaction
+- Mouse interaction
+- Keyboard shortcuts
+- Voice commands
+
+### Visual Accessibility
+
+- Adjustable text size
+- Dark mode
+- High contrast mode
+- Scalable UI elements
+
+### Audio Accessibility
+
+- Audio narration
+- Speech feedback
+- Voice recognition controls
+
+These features support users with a wide range of visual, motor, and cognitive accessibility needs.
+
+---
+
+## Controls
+
+### Keyboard Shortcuts
+
+| Key | Action                    |
+| --- | ------------------------- |
+| G   | Toggle gaze interaction   |
+| T   | Toggle large text mode    |
+| O   | Toggle audio narration    |
+| V   | Toggle voice commands     |
+| M   | Toggle dark mode          |
+| H   | Toggle high contrast mode |
+| R   | Reset simulation          |
 
 ### Movement Controls
 
-| Control           | Action                                        |
-| ----------------- | --------------------------------------------- |
-| **W / A / S / D** | Move around the environment                   |
-| **Arrow Keys**    | Alternative movement controls                 |
-| **Mouse**         | Look around the environment                   |
-| **Click / Gaze**  | Interact with doors, buttons, and UI elements |
-
-### Voice Commands
-
-Supported voice commands include:
-
-- "start" / "begin"
-- "left"
-- "right"
-- "next"
-- "submit"
-- "exit"
-- "audio on" / "audio off"
-- "dark on" / "dark off"
-- "contrast on" / "contrast off"
-- "gaze on" / "gaze off"
-- "text large" / "text small"
-- "reset"
+| Control       | Action                  |
+| ------------- | ----------------------- |
+| W / A / S / D | Move around environment |
+| Arrow Keys    | Alternative movement    |
+| Mouse         | Look around             |
+| Click / Gaze  | Interact with objects   |
 
 ---
 
-## Technologies
+## Voice Commands
+
+Supported commands include:
+
+- start
+- begin
+- left
+- right
+- next
+- submit
+- exit
+- audio on
+- audio off
+- dark on
+- dark off
+- contrast on
+- contrast off
+- gaze on
+- gaze off
+- text large
+- text small
+- reset
+
+---
+
+## Technologies Used
+
+### Frontend
 
 - A-Frame
-- JavaScript (ES6)
 - HTML5
 - CSS3
+- JavaScript (ES6)
+
+### VR & Graphics
+
 - Three.js (via A-Frame)
+- A-Frame Environment Component
+
+### Accessibility
+
 - Web Speech API
+- Speech Synthesis API
+- Speech Recognition API
+
+### Visualisation
+
 - Chart.js
 
 ---
@@ -116,11 +174,12 @@ Supported voice commands include:
 ## Project Structure
 
 ```text
-project/
+cashquest-vr-finance-simulator/
 │
 ├── index.html
 ├── style.css
 ├── README.md
+│
 ├── screenshots/
 │
 ├── js/
@@ -139,21 +198,16 @@ project/
 
 ---
 
-## Installation and Setup
+## Installation
 
-### Prerequisites
-
-- A modern web browser (Chrome, Edge, or Firefox)
-- Python 3.x or Visual Studio Code with the Live Server extension
-
-### Clone the Repository
+### Clone Repository
 
 ```bash
 git clone https://github.com/Salmah1/cashquest-vr-finance-simulator.git
 cd cashquest-vr-finance-simulator
 ```
 
-### Running the Project
+### Run Locally
 
 Using Python:
 
@@ -161,13 +215,13 @@ Using Python:
 python3 -m http.server 8000
 ```
 
-Open the application in your browser:
+Open:
 
 ```text
 http://localhost:8000
 ```
 
-Alternatively, open the project using the **Live Server** extension in Visual Studio Code.
+Alternatively, use the Live Server extension in Visual Studio Code.
 
 ---
 
@@ -197,6 +251,19 @@ Alternatively, open the project using the **Live Server** extension in Visual St
 
 ![High Contrast Mode with Voice Commands](screenshots/highContrast.png)
 
-### Dark Mode, High Contrast Mode, and Audio Narration
+### Combined Accessibility Features
 
 ![Dark Mode, High Contrast Mode, and Audio Narration](screenshots/darkHigh.png)
+
+---
+
+## Academic Context
+
+This project was developed as part of a university computing degree programme and demonstrates:
+
+- Virtual Reality development
+- Human-Computer Interaction principles
+- Accessibility-focused design
+- Financial education technology
+- Interactive simulation development
+- JavaScript software engineering practices
